@@ -22,7 +22,7 @@ extends Meat
 	public Duration hoursSinceLastMeal = Duration.ZERO;
 	public boolean isProliferating = false; // czy trwa ciążą/wysiadywanie jaj itp. 
 	public boolean isFeedingNewborns = false; // czy osobnik karmi noworodki
-	public boolean isAlive = true;
+
 
 	// This object is temporarily used to create the animal state history in animalStateHistory list
 	private AnimalState animalState;
@@ -112,10 +112,16 @@ extends Meat
 
 
 
+	public Gender getGender() {
+		return GENDER;
+	}
+
+
+
 	
-	public void reduceEenrgy( float energyPercent ) {
+	public void reduceEenergy( float energyPercent ) {
 		energyLevel -= energyPercent; //(float) energyLevel * energyPercent/100;	// for testing purposes here should be: energyPercen/2;
-		System.out.printf( "ID:%06d   energyLevel == %10.4f   energyPercent == %10.4f\r\n", getId(), energyLevel, energyPercent );
+		System.out.printf( "ReduceEnergy(): ID:%06d   energyLevel == %10.4f   energyPercent == %10.4f\r\n", getId(), energyLevel, energyPercent );
 	}
 
 
@@ -178,7 +184,7 @@ extends Meat
 		
 				//Move animal to another cell
 				setWildParkAreaCell( WildPark.getWildParkAreaCell( x, y ) );
-				getAnimalState().setWildParkAreaCell( WildPark.getWildParkAreaCell( x, y ) );	// only to sustain AnimalState up-to-date
+				getAnimalState().setWildParkAreaCell( WildPark.getWildParkAreaCell( x, y ) );	// just to keep AnimalState up-to-date
 				WildPark.getWildParkAreaCell( x, y ).addAnimal( this );
 		}
 	}
@@ -191,16 +197,18 @@ extends Meat
 	public void die() {
 		System.out.printf( "Animal Died -- ID: %6d \r\n", getId() );
 		TIME_OF_DEATH = WildPark.getWildParkTime();
+		energyLevel = 0;
+		getAnimalState().setEnergyLevel( 0 ); // just to keep AnimalState up-to-date
 		isAlive = false;
-		getAnimalState().isAlive = isAlive; // just to sustain AnimalState up-to-date
+		getAnimalState().isAlive = isAlive; // just to keep AnimalState up-to-date
 		WildParkArea.addDeadInLastTimeStepAnimal( this );
 		WildParkArea.addDeadBody( this );
 	}
 
 	
-	private void useEenrgy( float energyPercentLoss ) {
-		reduceEenrgy( energyPercentLoss );
-		getAnimalState().setEnergyLevel( getEnergyLevel() );	// only to sustain AnimalState up-to-date
+	protected void useEenergy( float energyPercentLoss ) {
+		reduceEenergy( energyPercentLoss );
+		getAnimalState().setEnergyLevel( getEnergyLevel() );	// just to keep AnimalState up-to-date
 	}
 
 	public abstract void proliferate();
@@ -232,30 +240,42 @@ extends Meat
 	 */
 	public void performTimeStep() {
 		// Loose energy just because of passing time
-		System.out.printf( "Animal.performTimeStep() --- getENERGY_LOSS_ON_IDLE = %.4f\r\n", getENERGY_LOSS_ON_IDLE() );
-		useEenrgy( getENERGY_LOSS_ON_IDLE() );
+		System.out.printf( "Animal.performTimeStep(): useEnergy on IDLE --- getENERGY_LOSS_ON_IDLE = %.4f\r\n", getENERGY_LOSS_ON_IDLE() );
+		useEenergy( getENERGY_LOSS_ON_IDLE() );
 
 		if( energyLevel <= 0 )
 			die();
 		else {
 			hoursSinceLastMeal = hoursSinceLastMeal.plus( WildPark.getWildParkTimeStepDuration() );
-			getAnimalState().hoursSinceLastMeal = hoursSinceLastMeal;	// just to sustain AnimalState up-to-date
+			getAnimalState().hoursSinceLastMeal = hoursSinceLastMeal;	// just to keep AnimalState up-to-date
 
+			// EAT - if there is anything to be eaten in the place
+
+
+			// PROLIFERATE - if in the place there is an animal of the same species with the opposite gender and in the range of breeding age MAX and MIN values
+			
+
+			// MAKE MOOVE
 			// Loose energy on move
 //			float energyPercentLoss = 0;
 			float energyPercentLoss = move( WildPark.getWildParkTimeStepDuration() );
-			useEenrgy( energyPercentLoss );
+			System.out.printf( ">=70%% --- performTimeStep(): useEnergy - on move --- energyPercentLoss = %.4f\r\n", energyPercentLoss );
 
 			if( energyLevel < getAnimalSpeciesSpecification().getHUNGER_ENERGY_PERCENT() ) { //Zaczyna chudnąć dopiero, gdy osiągię poziom głodu
 				energyPercentLoss += getENERGY_LOSS_ON_IDLE(); // get the sum of on_idle_energy_loss + on_move_energy_loss
 				System.out.printf( "<70%% --- energyPercentLoss = %.4f\r\n", energyPercentLoss );
 				reduceWeight( weight * energyPercentLoss / 100 ); // chudnie procentowo tyle, co traci energii
-				getAnimalState().setWeight( weight );	// just to sustain AnimalState up-to-date
+				getAnimalState().setWeight( weight );	// just to keep AnimalState up-to-date
 			}
+
+			if( energyLevel <= 0 )
+				die();
 
 			//Remember current animal state at animal history list
 			animalStateHistory.add( new AnimalState( getAnimalState() ) );
 		}
+
+		System.out.printf( "AFTER performTimeStep(): energyLevel:: %.4f --- AnimalState.energyLevel:: %.4f\r\n", energyLevel, getAnimalState().getEnergyLevel() );
 
 	}
 

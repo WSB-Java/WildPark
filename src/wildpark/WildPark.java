@@ -10,8 +10,13 @@ package wildpark;
 
 import java.util.ArrayList;
 import java.util.Random;
-import java.time.Duration;
 import java.util.*;
+import java.time.Duration;
+
+// import javafx.util.Duration;
+import javafx.animation.Timeline;
+import javafx.animation.KeyFrame;
+import javafx.animation.Animation;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -83,6 +88,10 @@ public class WildPark extends Application {
     public static CHART_SpeciesTotalWeight_PIE chart_SpeciesTotalWeight_Pie = null;
 
 
+    /**
+     * Variable used for timer actions
+     */
+    Timeline timeline = null;
 
     
     /**
@@ -153,6 +162,7 @@ public class WildPark extends Application {
 
         // Totlly remove rotten meat from the park. 
         for( Meat meat : rottenMeatList ) {
+            meat.getWildParkAreaCell().removeAnimal( (Animal) meat );    
             WildParkArea.getDeadBodies().remove( meat );
         }
         
@@ -249,15 +259,15 @@ public class WildPark extends Application {
     static Label toolBarLabel_CurrentStep = new Label( String.format( "%8d", wildParkTime.toHours() ) ); 
     Button toolBarButton_Step = new Button("Step");
 
-    int playSpeed = 1; // Time Steps per second
+    int stepDelay = 3; // [seconds] - Default delay beetween subsequent TimeSteps 
 
-    TextField textField_PlaySpeed = new TextField() {
+    TextField textField_StepDelay = new TextField() {
         @Override
         public void replaceText(int start, int end, String text) {
             if( text.matches("[0-9]") ) 
-                if( textField_PlaySpeed.getLength() < 3 ) {
+                if( textField_StepDelay.getLength() < 3 ) {
                 super.replaceText(start, end, text);   
-                playSpeed = Integer.parseInt( super.getText() );                  
+                stepDelay = Integer.parseInt( super.getText() );                  
             } 
             else
                 super.clear(); 
@@ -266,9 +276,9 @@ public class WildPark extends Application {
         @Override
         public void replaceSelection(String text) {
             if ( text.matches("[0-9]") ) 
-                if( textField_PlaySpeed.getLength() < 3 ) {
+                if( textField_StepDelay.getLength() < 3 ) {
                     super.replaceSelection(text);
-                    playSpeed = Integer.parseInt( super.getText() ); 
+                    stepDelay = Integer.parseInt( super.getText() ); 
                 }
                 else
                     super.clear();
@@ -277,7 +287,7 @@ public class WildPark extends Application {
 
 
     Button toolBarButton_Play = new Button("Play");
-    boolean stopButtonClicked = true; // This is set to false, when Play button is clicked. Then it is set to true, when Stop button is clicked. It is used by Play function.
+    boolean timeStepsAnimationStopped = true; // This is set to false, after Play button is clicked. It is set to true again, after Stop button is clicked. It is used by Play function.
 
     int numberOfStepsToRun = 10; // when Run button is clicked
 
@@ -327,7 +337,6 @@ public class WildPark extends Application {
     // Main application stage
     public static Stage stage;
     GridPane wildParkGrid = new GridPane();
-
 
 
 
@@ -398,8 +407,8 @@ public class WildPark extends Application {
         MenuBar menuBar = new MenuBar();
         menuBar.getMenus().addAll( menu1, menu2, menu3, menu4 );
 
-        textField_PlaySpeed.setPrefColumnCount(2);
-        textField_PlaySpeed.setText( String.format( "%d", playSpeed ) );
+        textField_StepDelay.setPrefColumnCount(2);
+        textField_StepDelay.setText( String.format( "%d", stepDelay ) );
         toolBarButton_Play.setMinWidth( 42 );   // ...to avoid size change when "Play" is switched to "Stop"
 
         textField_NumberOfStepsToRun.setPrefColumnCount(3);
@@ -416,8 +425,8 @@ public class WildPark extends Application {
             toolBarButton_Step,
             new Separator( Orientation.VERTICAL ),
             new Label( "Play Speed:"),
-            textField_PlaySpeed,
-            new Label( "steps/sec."),
+            textField_StepDelay,
+            new Label( "sec./step"),
             toolBarButton_Play,
             new Separator( Orientation.VERTICAL ),
             new Label( "Run"),
@@ -470,7 +479,7 @@ public class WildPark extends Application {
         stage.setHeight(600);
         stage.show();
 
-        textField_PlaySpeed.setAlignment(Pos.CENTER_RIGHT); // setAlignment MUST be called after the TextField was added to the scene
+        textField_StepDelay.setAlignment(Pos.CENTER_RIGHT); // setAlignment MUST be called after the TextField was added to the scene
         textField_NumberOfStepsToRun.setAlignment(Pos.CENTER_RIGHT); // setAlignment MUST be called after the TextField was added to the scene
 
     }
@@ -734,9 +743,10 @@ public class WildPark extends Application {
     // Fill Wild Park with animals
     void populateWildPark() {
 
-        final int INSECT_EATING_BAT_COUNT = 5; // Count of all bats to be generated 
-        final int TEST_BAT_COUNT = 5; // Count of all bats to be generated in Wild Park 
-        final int CHAMOIS_COUNT = 5; // Count of all bats to be generated in Wild Park 
+        final int CHAMOIS_COUNT = 5; // Count of all Chamoises to be generated in Wild Park 
+        final int INSECT_EATING_BAT_COUNT = 5; // Count of all Bats to be generated 
+        final int LYNX_COUNT = 5; // Count of all Lynxes to be generated in Wild Park         
+        final int TEST_BAT_COUNT = 5; // Count of all TestBats to be generated in Wild Park 
 
         final int LEOPARD_COUNT=10;
         final int LION_COUNT = 10;
@@ -748,6 +758,12 @@ public class WildPark extends Application {
 
         WildParkAreaCell areaCell;
 
+        // A herd/pack in a single WildParkCell- stado w jednej komórce:
+        areaCell = ChamoisSpecification.selectRandomCell();
+        for( int i=0; i<CHAMOIS_COUNT; i++ ) {
+            Animal chamois = new Chamois( areaCell, false );
+        }
+
         // single animals - pojedyncze egzemplarze:
         for( int i=0; i<INSECT_EATING_BAT_COUNT; i++ ) {
             Animal bat = new InsectEatingBat();
@@ -756,20 +772,19 @@ public class WildPark extends Application {
         // A herd/pack in a single WildParkCell- stado w jednej komórce:
         areaCell = InsectEatingBatSpecification.selectRandomCell();
         for( int i=0; i<5; i++ ) {
-    //        Animal bat = new InsectEatingBat( areaCell, false );
+            Animal bat = new InsectEatingBat( areaCell, false );
         }
         
+        // single animals - pojedyncze egzemplarze:
+        for( int i=0; i<LYNX_COUNT; i++ ) {
+            Animal lynx = new Lynx();
+        }
 
         // single animals - pojedyncze egzemplarze:
         for( int i=0; i<TEST_BAT_COUNT; i++ ) {
             Animal testBat = new TestBat();
         }
 
-        // A herd/pack in a single WildParkCell- stado w jednej komórce:
-        areaCell = ChamoisSpecification.selectRandomCell();
-        for( int i=0; i<CHAMOIS_COUNT; i++ ) {
-            Animal chamois = new Chamois( areaCell, false );
-        }
 
         
         // for( int i=0; i<HORSE_COUNT; i++ ) {
@@ -977,6 +992,28 @@ public class WildPark extends Application {
 
 
 
+
+    public void stopTimeStepsAnimation() {
+        toolBarButton_Play.setText( "Play" );
+        timeStepsAnimationStopped = true;    
+        //Stop automatic animation of time steps                
+        if( timeline != null ) {
+            timeline.stop();
+            timeline = null;        
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
     /**
      * Listeners to menu items, buttons and other controls of UI
      */
@@ -1010,6 +1047,7 @@ public class WildPark extends Application {
             @Override 
             public void handle( ActionEvent e ) {
                 System.out.println("menu1_New clicked"); 
+                stopTimeStepsAnimation();
                 //Wyświetl okno dialogowe z pytaniem, czy użytkownik chce zapisać bieżący park.
                 //
                 clearWildPark();
@@ -1021,7 +1059,7 @@ public class WildPark extends Application {
             @Override 
             public void handle( ActionEvent e ) {
                 System.out.println("menu1_Open clicked");
-                
+                stopTimeStepsAnimation();
             }
         });
 
@@ -1029,6 +1067,7 @@ public class WildPark extends Application {
             @Override 
             public void handle( ActionEvent e ) {
                 System.out.println("menu1_Save_New clicked");
+                stopTimeStepsAnimation();
             }
         });
 
@@ -1150,7 +1189,7 @@ public class WildPark extends Application {
             @Override 
             public void handle( ActionEvent e ) {
                 //Wyświetl okno dialogowe z pytaniem, czy użytkownik chce zapisać bieżący park.
-                //
+                stopTimeStepsAnimation();
                 clearWildPark();
                 newWildParkArea();                
             }
@@ -1179,6 +1218,7 @@ public class WildPark extends Application {
             public void handle( ActionEvent e ) {
                 System.out.println("toolBarButton_Reset clicked");
                 // Resets Wild Park life - but does not change the map. Life starts from the begining.
+                stopTimeStepsAnimation();
                 clearWildPark();
                 populateWildPark();
             }
@@ -1188,17 +1228,20 @@ public class WildPark extends Application {
         toolBarButton_Play.setOnAction( new EventHandler<ActionEvent>() {
             @Override 
             public void handle( ActionEvent e ) {
-                System.out.println("toolBarButton_Play clicked");
-                // Let the Park performs steps automatically with the speed specified in textField_PlaySpeed text field.
+                System.out.println("toolBarButton_Play/Stop clicked");
+                // Let the Park performs steps automatically with the speed specified in textField_StepDelay text field.
                 // Change the button Label to Stop and perform Time Steps until the Stop button is clicked.
-                if( stopButtonClicked ) {
+                if( timeStepsAnimationStopped ) {   // if Play button clicked
                     toolBarButton_Play.setText( "Stop" );
-                    stopButtonClicked = false;
-                    //Perform automatic steps with specified delay determined on the basis of playSpeed attribute value.
-                } else {
-                    toolBarButton_Play.setText( "Play" );
-                    stopButtonClicked = true;    
-                    //Stop automatic steps                
+                    timeStepsAnimationStopped = false;
+                    //Perform automatic steps with specified delay determined on the basis of stepDelay attribute value.
+                    timeline = new Timeline( new KeyFrame(
+                        javafx.util.Duration.millis( (int) 1000*stepDelay ),
+                        ae -> makeWildParkTimeStep() ) ); // Programmatically scroll to the very bottom
+                    timeline.setCycleCount( Animation.INDEFINITE ); // Animation.INDEFINITE
+                    timeline.play();                    
+                } else {    // if Stop button clicked
+                    stopTimeStepsAnimation();
                 }
 
             }
@@ -1208,7 +1251,7 @@ public class WildPark extends Application {
             @Override 
             public void handle( ActionEvent e ) {
                 System.out.println("toolBarButton_Step clicked");
-               
+                stopTimeStepsAnimation();               
                 // Perform the single Time step
                 makeWildParkTimeStep();
             }
@@ -1218,6 +1261,7 @@ public class WildPark extends Application {
             @Override 
             public void handle( ActionEvent e ) {
                 System.out.println("toolBarButton_Run clicked");
+                stopTimeStepsAnimation();
                 // Quickly perform the given amount of Time Steps. The amount of steps is specified in textField_NumberOfStepsToRun text field.
                 for(int i=0; i<numberOfStepsToRun; i++) {
                     makeWildParkTimeStep();

@@ -6,7 +6,8 @@ import wildpark.*;
 import java.util.Random;
 
 /**
- * Absract class used to set the particular animal specification parameters.
+ * Real class used to set the particular animal specification parameters.
+ * Insect Eating Bat - nietoperz zjadający insekty
  */
 public final class InsectEatingBatSpecification extends AnimalSpeciesSpecification {
 	private static final String SPECIES_NAME = "Insect Eating Bat";

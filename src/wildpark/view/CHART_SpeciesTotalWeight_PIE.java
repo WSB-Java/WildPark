@@ -97,7 +97,7 @@ public class CHART_SpeciesTotalWeight_PIE {
         
         //creating the chart
         pieChart = new PieChart(pieChartData);       
-        pieChart.setTitle("Species total weight in ecosystem [kg]");
+        pieChart.setTitle("Total percentage of weight of each species in ecosystem [%]");
         pieChart.setLegendSide(Side.LEFT);
 
         /*Button step = new Button("next step");
@@ -209,7 +209,7 @@ public class CHART_SpeciesTotalWeight_PIE {
   //           new PieChart.Data("IO",20),
   //           new PieChart.Data("NIO",21)
   //       );
-            
+
 		pieChartData = FXCollections.observableArrayList(
             new PieChart.Data("Chamois", chamoisTotalWeight),
             new PieChart.Data("Test Bat", testBatsTotalWeight),

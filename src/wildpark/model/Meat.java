@@ -18,6 +18,10 @@ extends Food
      */
 	protected int MAX_HOURS_OF_SUITABILITY_FOR_CONSUMPTION_SINCE_DEATH_IN_15_DEGREES_CENTIGRADE = 36; 
 
+	protected boolean isAlive = true;
+
+
+
 	/**
 	 * Animal or Meat unique ID
 	 * @return long unique Meat/Animal ID
@@ -53,6 +57,9 @@ extends Food
 	// 	return getHoursSinceDeath();
 	// }
 
+	public boolean isAlive() {
+		return isAlive;
+	}
 
 	public boolean isRotten() {
 		System.out.printf( "Meat.isRotten(): DurationSinceDeath == %d hours\r\n", getDurationSinceDeath().toHours() );

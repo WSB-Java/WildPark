@@ -6,6 +6,9 @@
 package wildpark.view;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.TreeMap;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -23,10 +26,16 @@ import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BorderPane;
-// import javafx.scene.layout.HBox;
+import javafx.scene.layout.HBox;
 // import javafx.scene.layout.VBox;
 // import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
+// import javafx.scene.layout.StackPane;
+
+import javafx.beans.value.ObservableValue;
+
+import javafx.animation.Timeline;
+import javafx.animation.KeyFrame;
+import javafx.util.Duration;
 
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
@@ -47,27 +56,30 @@ public class CHART_SpeciesTotalWeight_LINE {
 	private static Stage stage = new Stage();
 
 	CheckBox cb1 = new CheckBox( "Transparent on mouse exit" );
+	CheckBox cb2 = new CheckBox( "Enlarge scale for tiny animals" );
 
-    private LineChart<Number,Number> lineChart = null; 
+    private LineChart<Number,Number> lineChart = null; 	
+	private Map<String,Float> speciesTotalWeightMap = new TreeMap<>();
+	private ArrayList<XYChart.Series> seriesList = new ArrayList<>();
 
-	
-	XYChart.Series series1; 	
-	XYChart.Series series2;
-	XYChart.Series series3;	
+    final NumberAxis xAxis = new NumberAxis();
+    final NumberAxis yAxis = new NumberAxis();
 
-
+	// XYChart.Series series1; 	
+	// XYChart.Series series2;
+	// XYChart.Series series3;	
 	
 
 	public long step = 0;
 	
 	private List <Animal> animals;
 	
-	private int horseCount;
-	private int insectEatingBatCount;
-	private int giraffeCount;
-	private float chamoisTotalWeight;
-	private float insectEatingBatsTotalWeight;
-	private float testBatsTotalWeight;
+	double scrollPaneCurrentVvalue;
+	boolean shouldListenToScroll = true;
+
+	// private float chamoisTotalWeight;
+	// private float insectEatingBatsTotalWeight;
+	// private float testBatsTotalWeight;
 	
 
 
@@ -104,16 +116,16 @@ public class CHART_SpeciesTotalWeight_LINE {
         	}
         });        		
         
-        //defining the axes
-        final NumberAxis xAxis = new NumberAxis();
-        final NumberAxis yAxis = new NumberAxis();
+        // The axes
+        // xAxis = new NumberAxis();
+        // yAxis = new NumberAxis();
         xAxis.setLabel("Time Steps [hours]");
-        yAxis.setLabel("Species total weight [kg]");
+        yAxis.setLabel("Total weight of each species [kg]");
 
-        //creating the chart
+        // The chart
         lineChart = new LineChart<Number,Number>(xAxis,yAxis);
 //        lineChart.setBackground( Background.EMPTY );
-       	lineChart.setLegendSide( Side.RIGHT );
+       	lineChart.setLegendSide( Side.BOTTOM );
      	//lineChart.setCreateSymbols(false);           
                 
         /*Button step = new Button("next step");
@@ -127,9 +139,9 @@ public class CHART_SpeciesTotalWeight_LINE {
 
 		reset();
 
-        lineChart.setPrefSize( 780.0, 500.0 );
+        lineChart.setPrefSize( 780.0, 250.0 );
 
-        Slider slider = new Slider( 500, 50000, 500 );    // Slider( min, max, initial_value )
+        Slider slider = new Slider( 100, 100000, 100 );    // Slider( min, max, initial_value ) SLOWS DOWN AT 500 000
         slider.setOrientation( Orientation.VERTICAL );
         slider.setShowTickMarks(true);
         slider.setShowTickLabels(false);
@@ -142,11 +154,37 @@ public class CHART_SpeciesTotalWeight_LINE {
         // lineChart.scaleXProperty().bind( slider.valueProperty() );
         lineChart.minHeightProperty().bind( slider.valueProperty() );
 
+
 		ScrollPane scrollPane = new ScrollPane();
 //		scrollPane.setBackground( Background.EMPTY );
         //lineChart.setMinHeight(10000);	// Set huge MinHeight (ex. 1 000 000) for Y axis to show variations of weight of tiny animals like mice, bats, etc.
         scrollPane.setVvalue( scrollPane.getVmax() );	// Programmatically scroll to the very bottom
         scrollPane.setContent( lineChart );
+        scrollPane.setPannable( true );
+        scrollPaneCurrentVvalue = 1.0;
+
+		slider.valueProperty().addListener(
+		    (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+//			    if( scrollPane.getVvalue() > 0.9 ) {
+//			    	shouldListenToScroll = false;
+					Timeline timeline = new Timeline( new KeyFrame(
+				        Duration.millis(10),
+				        ae -> scrollPane.setVvalue( scrollPaneCurrentVvalue ) ) );	// Programmatically scroll to the very bottom
+//						shouldListenToScroll = true;
+					timeline.play();
+//				}
+			});        
+
+		// Below is a try to remember current Scroll V Value and to regain this percentage position on sliderValueProperty change 
+		// BUT IT DID NOT WORK THE ELEGANT WAY (IT JUMPS A LOT AND NOT FULLY PREDICTABLY)
+		// scrollPane.vvalueProperty().addListener(
+		//     (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+		//         if( shouldListenToScroll ) {
+		//         	scrollPaneCurrentVvalue = scrollPane.getVvalue();
+		// 	        System.out.println( "Scroll V Value = " +  scrollPaneCurrentVvalue );
+		//         }
+		// 	});        
+
 
         // BINDINGS: WINDOW SIZE (ScrollPane) ---> LineChart 
         lineChart.prefWidthProperty().bind( scrollPane.widthProperty().multiply(0.98) );
@@ -154,25 +192,37 @@ public class CHART_SpeciesTotalWeight_LINE {
 
         // Window Tranparency
 		cb1.setSelected( false );
-  //       HBox.setMargin( cb1, new Insets(9,10,9,0) );
+        HBox.setMargin( cb1, new Insets(9,10,9,0) );
 
-		// HBox hBox = new HBox();
-  //       hBox.setAlignment(Pos.CENTER_RIGHT);
-  //       hBox.getChildren().addAll( cb1 );    
+		cb2.setSelected( false );
+        HBox.setMargin( cb2, new Insets(9,30,9,0) );
+
+		cb2.selectedProperty().addListener(
+			(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
+//		        yAxis.setForceZeroInRange( true );
+		        System.out.println( "CB2" );
+			});
+
+
+		HBox hBox = new HBox();
+        hBox.setAlignment(Pos.CENTER_RIGHT);
+        hBox.getChildren().addAll( cb1  );    
 
 //         VBox vBox = new VBox();
 // //        VBox.setVgrow( lineChart, Priority.ALWAYS );
 //         vBox.getChildren().addAll( hBox, scrollPane );    
 //         BorderPane.setVgrow( vBox, Priority.ALWAYS );
 
-        StackPane stackPane = new StackPane();
-		StackPane.setAlignment( cb1, Pos.BOTTOM_RIGHT );
-        StackPane.setMargin( cb1, new Insets(9,25,9,0) );
-        stackPane.getChildren().addAll( scrollPane, cb1 );
+  //       StackPane stackPane = new StackPane();
+		// StackPane.setAlignment( cb1, Pos.BOTTOM_RIGHT );
+  //       StackPane.setMargin( cb1, new Insets(9,25,80,0) );
+  //       stackPane.getChildren().addAll( scrollPane, cb1 );
 
                                   // BorderPane( center    , top ,right, bottom, left ), sceneWidth, sceneHeight  
-        Scene scene = new Scene( new BorderPane( stackPane, null, null, null, slider ), 840, 528 );
+        Scene scene = new Scene( new BorderPane( scrollPane, null, null, hBox, slider ), 840, 310 );
 		stage.setScene( scene );
+
+		slider.requestFocus();
 
 
 
@@ -219,22 +269,38 @@ public class CHART_SpeciesTotalWeight_LINE {
 	public void reset() {
 		lineChart.getData().clear();
 		step = 0;
+		lineChart.setCreateSymbols( true );	// Display little circles at chart lines 
 
-		series1 = new XYChart.Series(); 	
-		series2 = new XYChart.Series();
-		series3 = new XYChart.Series();	
+		// series1 = new XYChart.Series(); 	
+		// series2 = new XYChart.Series();
+		// series3 = new XYChart.Series();	
 
-        // series1.setName("Horse");
-        // series3.setName("Giraffe");
-        // series4.setName("Mammal4");
-        // series5.setName("Mammal5");
-        series1.setName("Chamois");
-        series2.setName("Test Bat");
-        series3.setName("Insect Eating Bat");
+  //       series1.setName("Chamois");
+  //       series2.setName("Test Bat");
+  //       series3.setName("Insect Eating Bat");
 
-        lineChart.getData().add( series1 );
-        lineChart.getData().add( series2 );    
-        lineChart.getData().add( series3 );    		
+  //       lineChart.getData().add( series1 );
+  //       lineChart.getData().add( series2 );    
+  //       lineChart.getData().add( series3 );    	
+
+
+        // Create Species Weight Map 
+		speciesTotalWeightMap.clear();
+		for( Animal a : WildPark.getAnimals() ) {	
+			String speciesName = a.getSPECIES_NAME();		
+			Float speciesTotalWeight = speciesTotalWeightMap.get( speciesName );   	
+			speciesTotalWeightMap.put( speciesName, ( speciesTotalWeight==null ) ? Float.valueOf(a.getWeight()) : Float.valueOf(Float.sum(speciesTotalWeight.floatValue(),a.getWeight())) );
+		}
+
+		// Create series list and add each series to the lineChart
+		seriesList.clear();
+		for( String speciesName : speciesTotalWeightMap.keySet() ) {
+			XYChart.Series series = new XYChart.Series(); 	
+			series.setName( speciesName );
+			seriesList.add( series );
+			lineChart.getData().add( series );
+		}
+
 	}
 
 
@@ -278,21 +344,36 @@ public class CHART_SpeciesTotalWeight_LINE {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void nextStep() {	
-		horseCount = 0;
-		giraffeCount = 0;
-		chamoisTotalWeight = 0;
-		testBatsTotalWeight = 0;
-		insectEatingBatsTotalWeight = 0;
-		
-		getCount();			
+		// chamoisTotalWeight = 0;
+		// testBatsTotalWeight = 0;
+		// insectEatingBatsTotalWeight = 0;
 
-		// series1.getData().add(new XYChart.Data(step, horseCount));
-		// series3.getData().add(new XYChart.Data(step, giraffeCount));
-		series1.getData().add( new XYChart.Data( step, chamoisTotalWeight ) );
-		series2.getData().add( new XYChart.Data( step, testBatsTotalWeight ) );
-		series3.getData().add( new XYChart.Data( step, insectEatingBatsTotalWeight ) );
+        // Create Species Weight Map 
+        // Put ZERO for every species - do not delete species that were present in preceding steps
+		for( String speciesName : speciesTotalWeightMap.keySet() ) {
+			speciesTotalWeightMap.put( speciesName, Float.valueOf( 0 ) );
+		}
 
-		step++;// = WildPark.getWildParkTimeHours();
+		// Get species weight info from WildPark.animals list
+		for( Animal a : WildPark.getAnimals() ) {	
+			String speciesName = a.getSPECIES_NAME();		
+			Float speciesTotalWeight = speciesTotalWeightMap.get( speciesName );   	
+			speciesTotalWeightMap.put( speciesName, ( speciesTotalWeight==null ) ? Float.valueOf(a.getWeight()) : Float.valueOf(Float.sum(speciesTotalWeight.floatValue(),a.getWeight())) );
+		}
+
+		getValues();			
+
+//		series1.getData().add( new XYChart.Data( step, chamoisTotalWeight ) );
+//		series2.getData().add( new XYChart.Data( step, testBatsTotalWeight ) );
+//		series3.getData().add( new XYChart.Data( step, insectEatingBatsTotalWeight ) );
+
+		// Set every series
+		for( XYChart.Series series : seriesList ) {
+//			System.out.println( "CHART: series: " + series.getName() + " --- " + series.toString() );
+			series.getData().add( new XYChart.Data( step, speciesTotalWeightMap.get( series.getName() ) ) );
+		}
+
+		step++; // = WildPark.getWildParkTimeHours();
 	}
 	
     
@@ -301,32 +382,24 @@ public class CHART_SpeciesTotalWeight_LINE {
 
 
 
-	public void getCount() {	
-		for( Animal a : WildPark.getAnimals() ) {			
-			if(a.getSPECIES_NAME() == "Chamois") {
-				chamoisTotalWeight += a.getWeight();
-//				System.out.printf( "ChamoisTotalWeight: %.4f\r\n", chamoisTotalWeight );
-			}			
-			if(a.getSPECIES_NAME() == "TestBat") {
-				testBatsTotalWeight += a.getWeight();
-//				System.out.printf( "testBatsTotalWeight: %.4f\r\n", testBatsTotalWeight );
-			}
-			// if(a.getSPECIES_NAME() == "Horse") {
-			// 	horseCount +=1;
-			// 	//System.out.println(++horseCount);
-			// }
-			// if(a.getSPECIES_NAME() == "Giraffe") {
-			// 	giraffeCount +=1;
-			// 	//System.out.println(++horseCount);
-			// }
-			if(a.getSPECIES_NAME() == "Insect Eating Bat") { 
-				insectEatingBatsTotalWeight += a.getWeight();
-//				System.out.printf( "insectEatingBatsTotalWeight: %.4f\r\n", insectEatingBatsTotalWeight );
-			}
-			//System.out.println(" >>> "+insectEatingBatCount + ", " + horseCount+ ", " + giraffeCount);
-		}
+	public void getValues() {	
+// 		for( Animal a : WildPark.getAnimals() ) {			
+// 			if(a.getSPECIES_NAME() == "Chamois") {
+// 				chamoisTotalWeight += a.getWeight();
+// //				System.out.printf( "ChamoisTotalWeight: %.4f\r\n", chamoisTotalWeight );
+// 			}			
+// 			if(a.getSPECIES_NAME() == "TestBat") {
+// 				testBatsTotalWeight += a.getWeight();
+// //				System.out.printf( "testBatsTotalWeight: %.4f\r\n", testBatsTotalWeight );
+// 			}
+// 			if(a.getSPECIES_NAME() == "Insect Eating Bat") { 
+// 				insectEatingBatsTotalWeight += a.getWeight();
+// //				System.out.printf( "insectEatingBatsTotalWeight: %.4f\r\n", insectEatingBatsTotalWeight );
+// 			}
+// 			//System.out.println(" >>> "+insectEatingBatCount + ", " + horseCount+ ", " + giraffeCount);
+// 		}
 
-		if( step > 200 )
+		if( step > 100 )
 			lineChart.setCreateSymbols( false );	// Remove little circles from chart lines 
 //			System.out.printf( "ANIMALS: 200\r\n" );
 

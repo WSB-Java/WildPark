@@ -83,9 +83,10 @@ public class TestBat extends Bat implements NocturnalAnimal, Predator {
 	 * @return      Returns the amount of energy required to make the specific move 
 	 */
 	public float move( Duration time ) {
+		float energyPercentLoss = getAnimalSpeciesSpecification().getENERGY_LOSS_ON_STANDARD_SPEED_MOVE();
+		useEenergy( energyPercentLoss );	
 		moveInRandomDirection( time, getStandardSpeed() );
-		System.out.printf( "TEST Bat getENERGY_LOSS_ON_STANDARD_SPEED_MOVE == %.4f \r\n", getAnimalSpeciesSpecification().getENERGY_LOSS_ON_STANDARD_SPEED_MOVE() );		
-		return getAnimalSpeciesSpecification().getENERGY_LOSS_ON_STANDARD_SPEED_MOVE();
+		return energyPercentLoss;
 	}
 
 	public void proliferate(  ) {

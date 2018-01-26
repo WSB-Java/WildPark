@@ -9,10 +9,13 @@ public enum FoodType {
 	MOSQUITO,
 	MOTH,
 
+	CHAMOIS,
 	INSECT_EATING_BAT,
+	LYNX,
 	TEST_BAT,
 	RABBIT,	
 	TIGER, 
 	SEAL,
 	HORSE,
+
 }

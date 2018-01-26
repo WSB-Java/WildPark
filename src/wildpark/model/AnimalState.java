@@ -8,7 +8,7 @@ import java.time.Duration;
  * whole history of animal life.
  */
 public class AnimalState {
-	public float energyLevel = 100;	// Current animal energetic state - initially 100%
+	private float energyLevel = 100;	// Current animal energetic state - initially 100%
 	public Duration hoursSinceLastMeal = Duration.ZERO;
 	public boolean isProliferating = false; // czy trwa ciążą/wysiadywanie jaj itp. 
 	public boolean isFeedingNewborns = false; // czy osobnik karmi noworodki
@@ -46,7 +46,7 @@ public class AnimalState {
 	}
 
 	public String toStringForTooltip() {
-		return String.format( " %1$6.3f %% %3$8.4f kg %2$17d  ", energyLevel, hoursSinceLastMeal.toHours(), weight );
+		return String.format( " %1$6.3f %% %3$8.4f kg %2$15d   %4$-11s", energyLevel, hoursSinceLastMeal.toHours(), weight, isProliferating );
 	}
 
 	public WildParkAreaCell getWildParkAreaCell() {
@@ -62,6 +62,10 @@ public class AnimalState {
 	public void setEnergyLevel( float energyLevel ) {
 		this.energyLevel = energyLevel; 
 	}
+
+	public float getEnergyLevel() {
+		return energyLevel; 
+	}	
 
 	public float getWeight() {
 		return weight;

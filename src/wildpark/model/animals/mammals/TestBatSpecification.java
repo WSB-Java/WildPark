@@ -6,7 +6,8 @@ import wildpark.*;
 import java.util.Random;
 
 /**
- * Absract class used to set the particular animal specification parameters.
+ * Real class used to set the particular animal specification parameters.
+ * TestBat - testowy nietoperz
  */
 public final class TestBatSpecification extends AnimalSpeciesSpecification {
 	private static final String SPECIES_NAME = "TestBat";

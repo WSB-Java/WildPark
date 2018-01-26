@@ -7,10 +7,10 @@ import java.util.Random;
 
 /**
  * Real class used to set the particular animal specification parameters.
- * Chamois - kozica górska
+ * Lynx - ryś
  */
-public final class ChamoisSpecification extends AnimalSpeciesSpecification {
-	private static final String SPECIES_NAME = "Chamois";
+public final class LynxSpecification extends AnimalSpeciesSpecification {
+	private static final String SPECIES_NAME = "Lynx";
 	private static final float ADULT_WEIGHT = 48.00f;	// (34–62kg) average weight in kg 
 	private static final float NEWBORN_WEIGHT = 0.001f; // average in kg
 	private static final float FOOD_QUANTITY_REQUIRED_PER_DAY = 0.001f; // in kg
@@ -33,7 +33,8 @@ public final class ChamoisSpecification extends AnimalSpeciesSpecification {
 
 
 	private static final CellType[] acceptableCellTypes = {
-		CellType.MOUNTAIN		
+		CellType.MOUNTAIN,		
+		CellType.FOREST,		
 	};
 
 	public static CellType[] getAcceptableCellTypes() {
@@ -55,9 +56,7 @@ public final class ChamoisSpecification extends AnimalSpeciesSpecification {
 
 
 	private static final FoodType[] edibleFoodTypes = {
-		FoodType.GRASS,
-		FoodType.HERBS,
-		FoodType.TREE_LEAVES
+		FoodType.CHAMOIS,
 	};
 
 	public static FoodType[] getEdibleFoodTypes() {

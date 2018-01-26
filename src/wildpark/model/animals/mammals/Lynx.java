@@ -15,10 +15,10 @@ import java.util.Random;
 
 /**
  * The REAL animal class. This contains implementations of all abstract methods declared in all superclasses.
- * Chamois - kozica górska.
+ * Lynx - ryś.
  */
-public class Chamois extends Mammal implements DiurnalAnimal {
-	private static final AnimalSpeciesSpecification animalSpeciesSpecification = new ChamoisSpecification();
+public class Lynx extends Mammal implements DiurnalAnimal {
+	private static final AnimalSpeciesSpecification animalSpeciesSpecification = new LynxSpecification();
 
 	//	Inherited from Meat:
 	// public Duration TIME_OF_DEATH = null;
@@ -27,30 +27,30 @@ public class Chamois extends Mammal implements DiurnalAnimal {
 	// public float weight;	// current animal weight
 	// private final float CALORIC_EFFICIENCY_PER_KILO = animalSpeciesSpecification.CALORIC_EFFICIENCY_PER_KILO; // określa liczbę kalorii z kilograma danego mięsa 
 
-	public Chamois( AnimalSpeciesSpecification animalSpeciesSpecification, WildParkAreaCell wildParkAreaCell, boolean isNewborn ) {
+	public Lynx( AnimalSpeciesSpecification animalSpeciesSpecification, WildParkAreaCell wildParkAreaCell, boolean isNewborn ) {
 		super( animalSpeciesSpecification, wildParkAreaCell, isNewborn );
 	}
 
-	public Chamois( WildParkAreaCell wildParkAreaCell, boolean isNewborn ) {
+	public Lynx( WildParkAreaCell wildParkAreaCell, boolean isNewborn ) {
 		this( animalSpeciesSpecification, wildParkAreaCell, isNewborn );
 	}
 
-	public Chamois() {
-		this( animalSpeciesSpecification, ChamoisSpecification.selectRandomCell(), false );
+	public Lynx() {
+		this( animalSpeciesSpecification, LynxSpecification.selectRandomCell(), false );
 	}
 
 
 	public CellType[] getAcceptableCellTypes() {
-         return ChamoisSpecification.getAcceptableCellTypes();
+         return LynxSpecification.getAcceptableCellTypes();
     }
 
 	public boolean acceptsCellType( CellType cellType ) {
-		return ChamoisSpecification.acceptsCellType( cellType );
+		return LynxSpecification.acceptsCellType( cellType );
 	}
 
 	// public static WildParkAreaCell selectRandomCell() {   
  //        WildParkAreaCell areaCell = null;
- //        ChamoisSpecification ss = new ChamoisSpecification();
+ //        LynxSpecification ss = new LynxSpecification();
  //        // Get a random WildParkAreaCell acceptable for the particular species
  //        boolean isAcceptable = false;
  //        do {

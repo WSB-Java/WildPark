@@ -1,30 +1,39 @@
 package wildpark.util;
 
+import java.time.Duration;
+
 /**
  * Object of this class describes a singe state of the animal after each Time Step in Wild Park.
  */
 public class YearsDaysHoursDuration {
-	private long years;
-	private long days;
-	private long hours;
+	private static long years;
+	private static long days;
+	private static long hours;
 
 	public YearsDaysHoursDuration( long hours ) {
-		years = hours / (365*24);
-		days = (int) (hours/24) % 365;	
-		this.hours = hours % (365*24);
+		countYDH( hours );
 	}
 
-	public long getYears() {
+	private static void countYDH( long _hours ) {
+		years = _hours / (365*24);
+		days = (_hours/24) % 365;	
+		hours = _hours % 24;		
+	}
+
+	public static long getYears() {
 		return years;
 	}
 
-	public long getDays() {
+	public static long getDays() {
 		return days;
 	}
 
-	public long getHours() {
+	public static long getHours() {
 		return hours;
 	}
 
-
+	public static String toString( Duration duration ) {
+		countYDH( duration.toHours() );
+		return String.format( "%3d y %3d d %2d h", years, days, hours );
+	}
 }
