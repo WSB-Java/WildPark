@@ -62,7 +62,7 @@ extends Food
 	}
 
 	public boolean isRotten() {
-		System.out.printf( "Meat.isRotten(): DurationSinceDeath == %d hours\r\n", getDurationSinceDeath().toHours() );
+		System.out.printf( "Meat.isRotten(): Meat ID = %6d --- DurationSinceDeath == %d hours\r\n", getId(), getDurationSinceDeath().toHours() );
 		if( getDurationSinceDeath().toHours() > MAX_HOURS_OF_SUITABILITY_FOR_CONSUMPTION_SINCE_DEATH_IN_15_DEGREES_CENTIGRADE ) 
 			return true;
 		else
