@@ -122,9 +122,13 @@ public class WildParkAreaCell extends Button {
 		return y;
 	}
 
+
+
 	public LinkedHashSet<Animal> getAnimals() {
 		return animals;
 	}
+
+
 
 	public void addAnimal( Animal animal ) {
 		this.animals.add( animal );

@@ -452,7 +452,7 @@ public class WildPark extends Application {
         statusBar.setAlignment(Pos.BOTTOM_CENTER);
         statusBar.getChildren().addAll( label_NumberOfAnimals, label_NumberOfDeadBodies, label_FindAnimal, textField_FindAnimal, button_SearchAnimal );    
 
-        stage.setTitle("Wild Park 1.04");
+        stage.setTitle("Wild Park 1.26");
 
 
 // anchorPane.getChildren().addAll(scrollPane, label);
@@ -743,10 +743,10 @@ public class WildPark extends Application {
     // Fill Wild Park with animals
     void populateWildPark() {
 
-        final int CHAMOIS_COUNT = 5; // Count of all Chamoises to be generated in Wild Park 
-        final int INSECT_EATING_BAT_COUNT = 5; // Count of all Bats to be generated 
-        final int LYNX_COUNT = 5; // Count of all Lynxes to be generated in Wild Park         
-        final int TEST_BAT_COUNT = 5; // Count of all TestBats to be generated in Wild Park 
+        final int CHAMOIS_COUNT = 500; // Count of all Chamoises to be generated in Wild Park 
+        final int INSECT_EATING_BAT_COUNT = 500; // Count of all Bats to be generated 
+        final int LYNX_COUNT = 500; // Count of all Lynxes to be generated in Wild Park         
+        final int TEST_BAT_COUNT = 500; // Count of all TestBats to be generated in Wild Park 
 
         final int LEOPARD_COUNT=10;
         final int LION_COUNT = 10;

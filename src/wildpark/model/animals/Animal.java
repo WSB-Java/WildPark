@@ -134,14 +134,21 @@ extends Meat
 
 
 	/**
-	 * [getFood description]
-	 * @param  cell WildParkAreaCell in which the Food object should be searched/hunted and taken.
+	 * Try to get food in current WildParkAreaCell
 	 * @return      Food object found in the given WildParkAreaCell or null if no Food was found or hunted.
 	 */
-	public abstract Food getFood( WildParkAreaCell cell );
+	public abstract Food getFood();
 	
 
-	public abstract Food eat( Food food );
+
+	/**
+	 * [eat description]
+	 * @param  food [description]
+	 * @return      [description]
+	 */
+	public abstract void eat( Food food );
+
+
 	
 	/**
 	 * [move description]
@@ -249,11 +256,12 @@ extends Meat
 			hoursSinceLastMeal = hoursSinceLastMeal.plus( WildPark.getWildParkTimeStepDuration() );
 			getAnimalState().hoursSinceLastMeal = hoursSinceLastMeal;	// just to keep AnimalState up-to-date
 
-			// EAT - if there is anything to be eaten in the place
+			// GET FOOD and EAT - if there is anything to be eaten in the place
+			eat( getFood() );
 
-
-			// PROLIFERATE - if in the place there is an animal of the same species with the opposite gender and in the range of breeding age MAX and MIN values
-			
+			// PROLIFERATE - if in the place there is an animal of the same species with the opposite gender 
+			// and in the range of breeding age MAX and MIN values and is not pregnant already
+			proliferate();
 
 			// MAKE MOOVE
 			// Loose energy on move

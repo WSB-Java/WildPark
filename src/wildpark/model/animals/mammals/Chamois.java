@@ -70,13 +70,25 @@ public class Chamois extends Mammal implements DiurnalAnimal {
 	}
 
 
-	public Food getFood( WildParkAreaCell cell ) {
+	/**
+	 * Try to get food in current WildParkAreaCell
+	 * @return      Food object found in the given WildParkAreaCell or null if no Food was found or hunted.
+	 */
+	public Food getFood() {
 		return null;
+	}
+	
+
+
+	/**
+	 * [eat description]
+	 * @param  food [description]
+	 * @return      [description]
+	 */
+	public void eat( Food food ) {
+
 	}
 
-	public Food eat( Food food ) {
-		return null;
-	}
 
 	/**
 	 * [move description]
