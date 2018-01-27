@@ -328,8 +328,10 @@ public class WildPark extends Application {
     // STATUS BAR:
     public static Label label_NumberOfAnimals = new Label( String.format( "Number of animals: %10d", 0 ) );
     public static Label label_NumberOfDeadBodies = new Label( String.format( "Number of dead bodies: %10d", 0 ) );   
+    Button button_addAnimals = new Button("Add Animals..."); 
     Button button_SearchAnimal = new Button("Search"); 
-
+    Button button_trackAnimals = new Button("Track Animals..."); 
+    
 
 
 
@@ -441,16 +443,18 @@ public class WildPark extends Application {
         );
         toolBarLabel_CurrentStep.setMinWidth(40);
 
-        HBox statusBar = new HBox(10);  // HBox( spacing )
-        HBox.setMargin( label_NumberOfDeadBodies, new Insets(6,4,4,43) );    // Insets( top, right, bottom, left )
-        HBox.setMargin( label_NumberOfAnimals, new Insets(6,4,4,43) );    // Insets( top, right, bottom, left )
+        HBox statusBar = new HBox(4);  // HBox( spacing )
+        HBox.setMargin( label_NumberOfAnimals, new Insets(4,4,7,0) );    // Insets( top, right, bottom, left )
+        HBox.setMargin( label_NumberOfDeadBodies, new Insets(4,4,7,0) );    // Insets( top, right, bottom, left )
+        HBox.setMargin( button_addAnimals, new Insets(4,0,4,0) );    // Insets( top, right, bottom, left )
         Label label_FindAnimal = new Label("Find animal:");
-        HBox.setMargin( label_FindAnimal, new Insets(6,0,4,40) );    // Insets( top, right, bottom, left )
+        HBox.setMargin( label_FindAnimal, new Insets(4,0,7,0) );    // Insets( top, right, bottom, left )
         TextField textField_FindAnimal = new TextField();
-        HBox.setMargin( textField_FindAnimal, new Insets(2,0,2,0) );    // Insets( top, right, bottom, left )       
-        HBox.setMargin( button_SearchAnimal, new Insets(2,0,2,0) );    // Insets( top, right, bottom, left )
+        HBox.setMargin( textField_FindAnimal, new Insets(4,0,4,0) );    // Insets( top, right, bottom, left )       
+        HBox.setMargin( button_SearchAnimal, new Insets(4,0,4,0) );    // Insets( top, right, bottom, left )
+        HBox.setMargin( button_trackAnimals, new Insets(4,0,4,0) );    // Insets( top, right, bottom, left )
         statusBar.setAlignment(Pos.BOTTOM_CENTER);
-        statusBar.getChildren().addAll( label_NumberOfAnimals, label_NumberOfDeadBodies, label_FindAnimal, textField_FindAnimal, button_SearchAnimal );    
+        statusBar.getChildren().addAll( label_NumberOfAnimals, new Separator( Orientation.VERTICAL ), label_NumberOfDeadBodies, new Separator( Orientation.VERTICAL ), button_addAnimals, new Separator( Orientation.VERTICAL ), label_FindAnimal, textField_FindAnimal, button_SearchAnimal, new Separator( Orientation.VERTICAL ), button_trackAnimals );    
 
         stage.setTitle("Wild Park 1.26");
 
@@ -743,10 +747,10 @@ public class WildPark extends Application {
     // Fill Wild Park with animals
     void populateWildPark() {
 
-        final int CHAMOIS_COUNT = 500; // Count of all Chamoises to be generated in Wild Park 
-        final int INSECT_EATING_BAT_COUNT = 500; // Count of all Bats to be generated 
-        final int LYNX_COUNT = 500; // Count of all Lynxes to be generated in Wild Park         
-        final int TEST_BAT_COUNT = 500; // Count of all TestBats to be generated in Wild Park 
+        final int CHAMOIS_COUNT = 50; // Count of all Chamoises to be generated in Wild Park 
+        final int INSECT_EATING_BAT_COUNT = 50; // Count of all Bats to be generated 
+        final int LYNX_COUNT = 50; // Count of all Lynxes to be generated in Wild Park         
+        final int TEST_BAT_COUNT = 50; // Count of all TestBats to be generated in Wild Park 
 
         final int LEOPARD_COUNT=10;
         final int LION_COUNT = 10;
@@ -1349,6 +1353,14 @@ public class WildPark extends Application {
             }
         });
 
+        button_addAnimals.setOnAction( new EventHandler<ActionEvent>() {
+            @Override 
+            public void handle( ActionEvent e ) {
+                System.out.println("button_addAnimals clicked");
+                // Add the specified number of animals of the specified species to the WildPark
+            }
+        });
+        
         button_SearchAnimal.setOnAction( new EventHandler<ActionEvent>() {
             @Override 
             public void handle( ActionEvent e ) {
@@ -1364,6 +1376,13 @@ public class WildPark extends Application {
             }
         });
 
+        button_trackAnimals.setOnAction( new EventHandler<ActionEvent>() {
+            @Override 
+            public void handle( ActionEvent e ) {
+                System.out.println("button_trackAnimals clicked");
+                // Display the list of tracked animals and mark all tracked animals with a special marker on the map
+            }
+        });
 
     }
  
