@@ -1,8 +1,10 @@
-package util;
+package wildpark.util;
 
 import java.time.Duration;
 
-public classs WildParkTime {
+import wildpark.WildPark;
+
+public class WildParkTime {
     /**
      * Returns the current Wild Park Time counter value. The counter started from Duration.ZERO when 
      * this park was initiated. Everytime the New or Reset options are selected this counter is set 
@@ -12,7 +14,7 @@ public classs WildParkTime {
      */
     public static Duration getWildParkTime() {
         //System.out.println("Access to park time: " + wildParkTime.toHours());
-        return wildParkTime;
+        return WildPark.getWildParkTime();
     }
  
 
@@ -22,7 +24,7 @@ public classs WildParkTime {
      * used to determine hour of sunrise and sunset at particular season of the year.
      */
 	public static long getHourOfDay() {
-		return getWildParkTime() % 24;
+		return getWildParkTime().toHours() % 24;
 	}
 
 
@@ -33,7 +35,7 @@ public classs WildParkTime {
 
 
 
-	public static getSeason() {
+	public static int getSeason() {
 		return 0;	//ToDo
 	}
 

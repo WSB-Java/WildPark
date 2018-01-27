@@ -780,9 +780,10 @@ public class WildPark extends Application {
             Animal lynx = new Lynx();
         }
 
-        // single animals - pojedyncze egzemplarze:
+        // A herd/pack in a single WildParkCell- stado w jednej komórce:
+        areaCell = TestBatSpecification.selectRandomCell();
         for( int i=0; i<TEST_BAT_COUNT; i++ ) {
-            Animal testBat = new TestBat();
+            Animal testBat = new TestBat( areaCell, false );
         }
 
 
