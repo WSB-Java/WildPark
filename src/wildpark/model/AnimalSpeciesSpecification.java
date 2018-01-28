@@ -22,7 +22,10 @@ public abstract class AnimalSpeciesSpecification {
 	private int MAX_SCION_COUNT_IN_LITTER;	// na tej podstawie określimy widełki RANDOMa określającego liczbę potomków w danym miocie
 	private Duration MAX_AGE; //[days]
 	private Duration MIN_BREEDING_AGE; // [days] minimalny wiek rozrodczy
-	private Duration MAX_BREEDING_AGE; // [days] maksymalny wiek rozrodczy
+	private Duration MAX_BREEDING_MALE_AGE; // [days] maksymalny wiek rozrodczy samca
+	private Duration MAX_BREEDING_FEMALE_AGE; // [days] maksymalny wiek rozrodczy samicy
+	private int MIN_ENERGY_PERCENT_FOR_PROLIFERATION = 50; // [%] below this energyLevel the animal will not try to proliferate 
+	private int ENERGY_PERCENT_LOSS_ON_COPULATION = 20; // [%] Percent of energy lost during copulation
 	private Duration PROLIFERATION_DURATION; // [days] Duration of pregnancy or bearing and incubating eggs - czas trwania ciąży lub znoszenia i wysiadywania jaj
 	//
 	private Duration MAX_AGE_IN_NEST; // [days] specifies the number of days/hours after which a young animal leaves the nest 
@@ -108,7 +111,10 @@ public abstract class AnimalSpeciesSpecification {
 	public abstract int getMAX_SCION_COUNT_IN_LITTER();	// na tej podstawie określimy widełki RANDOMa określającego liczbę potomków w danym miocie
 	public abstract Duration getMAX_AGE(); 
 	public abstract Duration getMIN_BREEDING_AGE(); // minimalny wiek rozrodczy
-	public abstract Duration getMAX_BREEDING_AGE(); // maksymalny wiek rozrodczy
+	public abstract Duration getMAX_BREEDING_MALE_AGE();
+	public abstract Duration getMAX_BREEDING_FEMALE_AGE();
+	public int getMIN_ENERGY_PERCENT_FOR_PROLIFERATION() { return MIN_ENERGY_PERCENT_FOR_PROLIFERATION; } // minimal energyLevel %. Below this level the animal will not try to proliferate
+	public float getENERGY_PERCENT_LOSS_ON_COPULATION() { return ENERGY_PERCENT_LOSS_ON_COPULATION; } 
 	public abstract Duration getMAX_AGE_IN_NEST(); // specifies the number of days/hours after which a young animal leaves the nest 
 	public abstract Duration getMIN_SELF_GOVERNMENT_AGE(); // minimalny wiek usamodzielnienia się
 	public abstract int getCALORIC_EFFICIENCY_PER_KILO();

@@ -16,7 +16,7 @@ public final class ChamoisSpecification extends AnimalSpeciesSpecification {
 	private static final float FOOD_QUANTITY_REQUIRED_PER_DAY = 0.001f; // in kg
 	private static final int MAX_STARVING_DAYS_BEFORE_DEATH = 30;	
 	private static final float ENERGY_LOSS_ON_IDLE = (float) 100 / (MAX_STARVING_DAYS_BEFORE_DEATH * 24); // [%] Energy lost by this species even without any move - just because of passing time
-	private static final float ENERGY_LOSS_ON_STANDARD_SPEED_MOVE = (float) 100/48; // [%] Energy lost by this species while moving with STANDARD_SPEED for 1 hour (assumption - 100% energy == 24 hrs of moving)	
+	private static final float ENERGY_LOSS_ON_STANDARD_SPEED_MOVE = (float) 100/100; // [%] Energy lost by this species while moving with STANDARD_SPEED for 1 hour (assumption - 100% energy == 24 hrs of moving)	
 	private static final int HUNGER_ENERGY_PERCENT = 70; // poniżej tej wartości zwierze poszukuje jedzenia. Powyżej zwierze nie jest zainteresowane jedzeniem 
 	private static final float STANDARD_SPEED = (float) 1.5;	// km/h, sprawdzamy jaką odległość zwierzę standardowo pokonuje w ciągu dnia (w czasie godzin aktywności) i na tej podstawie obliczamy stardard w km/h
 	private static final int MAX_SPEED = 50;	// km/h
@@ -25,9 +25,10 @@ public final class ChamoisSpecification extends AnimalSpeciesSpecification {
 	private static final int MAX_SCION_COUNT_IN_LITTER = 2;	// na tej podstawie określimy widełki RANDOMa określającego liczbę potomków w danym miocie
 	private static final Duration MAX_AGE = Duration.ofDays(25*365); // 18-25 years
 	private static final Duration MIN_BREEDING_AGE = Duration.ofDays(3*365); // minimalny wiek rozrodczy
-	private static final Duration MAX_BREEDING_AGE = Duration.ofDays(15*365); // maksymalny wiek rozrodczy
+	private static final Duration MAX_BREEDING_MALE_AGE = Duration.ofDays(23*365); // [days] maksymalny wiek rozrodczy samca
+	private static final Duration MAX_BREEDING_FEMALE_AGE = Duration.ofDays(15*365); // [days] maksymalny wiek rozrodczy samicy
 	private static final Duration PROLIFERATION_DURATION = Duration.ofDays(175); // 150-200 [days] Duration of pregnancy or bearing and incubating eggs - czas trwania ciąży lub znoszenia i wysiadywania jaj
-	private static final Duration MAX_AGE_IN_NEST = Duration.ofDays(3*30); // po ilu 
+	private static final Duration MAX_AGE_IN_NEST = Duration.ofDays(3*30); // po ilu dniach opuszcza gniazdo
 	private static final Duration MIN_SELF_GOVERNMENT_AGE = Duration.ofDays(3*30); // minimalny wiek usamodzielnienia się
 	private static final int CALORIC_EFFICIENCY_PER_KILO = 941; // Cal/kg
 
@@ -159,8 +160,12 @@ public final class ChamoisSpecification extends AnimalSpeciesSpecification {
 		return MIN_BREEDING_AGE;
 	}
 	
-	public Duration getMAX_BREEDING_AGE() {
-		return MAX_BREEDING_AGE;
+	public Duration getMAX_BREEDING_MALE_AGE() {
+		return MAX_BREEDING_MALE_AGE;
+	}
+	
+	public Duration getMAX_BREEDING_FEMALE_AGE() {
+		return MAX_BREEDING_FEMALE_AGE;
 	}
 	
 	public Duration getMAX_AGE_IN_NEST() {

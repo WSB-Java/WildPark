@@ -96,16 +96,13 @@ public class Lynx extends Mammal implements DiurnalAnimal {
 	 * @param  time [description]
 	 * @return      Returns the amount of energy required to make the specific move 
 	 */
-	public float move( Duration time ) {
-		float energyPercentLoss = getAnimalSpeciesSpecification().getENERGY_LOSS_ON_STANDARD_SPEED_MOVE();
-		useEenergy( energyPercentLoss );	
-		moveInRandomDirection( time, getStandardSpeed() );
-		return energyPercentLoss;
-	}
+//	public float move( Duration time ) {
+//		float energyPercentLoss = getAnimalSpeciesSpecification().getENERGY_LOSS_ON_STANDARD_SPEED_MOVE();
+//		useEenergy( energyPercentLoss );	
+//		moveInRandomDirection( time, getStandardSpeed() );
+//		return energyPercentLoss;
+//	}
 
-	public void proliferate() {
-		
-	}
 
 	public boolean hunt( Animal animal ) {
 		return false;

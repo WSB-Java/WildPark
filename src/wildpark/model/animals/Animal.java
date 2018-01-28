@@ -101,11 +101,15 @@ extends Meat
 
 
 
-	public Movement getMovement() {
-		return new Movement( animalSpeciesSpecification.getSTANDARD_SPEED() );
+//	public Movement getMovement() {
+//		return new Movement( animalSpeciesSpecification.getSTANDARD_SPEED() );
+//	}
+
+	public ArrayList<AnimalState> getAnimalStateHistory() {
+		return animalStateHistory;
 	}
-
-
+	
+	
 	public Duration getAge() {
 		return WildPark.getWildParkTime().minus( TIME_OF_BIRTH );	
 	}	
@@ -147,6 +151,14 @@ extends Meat
 	 * @return      [description]
 	 */
 	public abstract void eat( Food food );
+//	{
+//		//sprawdź jakie zwierzęta są w komórce parku, w której aktualnie przebywa ten zwierzak
+//		//w efekcie uzyskamy listę potencjalnych ofiar
+//		//algorytm wyboru ofiary
+//		// if( roślinożerca =>>> jedz pierwsze napotkane pożywienie
+//		// if predator >>> JAKOŚ WYBIERZ OPTYMALNĄ OFIARĘ - ToDo
+//
+//	}
 
 
 	
@@ -155,8 +167,16 @@ extends Meat
 	 * @param  time [description]
 	 * @return      Returns % of energy used to make move
 	 */
-	public abstract float move( Duration time );
+	protected float move( Duration time ) {
+		float energyPercentLoss = getAnimalSpeciesSpecification().getENERGY_LOSS_ON_STANDARD_SPEED_MOVE();
+		useEnergy( energyPercentLoss );	
+		moveInRandomDirection( time, getStandardSpeed() );
+		return energyPercentLoss;
+	}
 
+	
+	
+	
 	protected void moveInRandomDirection( Duration time, float speed ) {
 		// System.out.printf( "%s", getWildParkAreaCell().toString() );
 		int currentX = getWildParkAreaCell().getX();
@@ -213,12 +233,93 @@ extends Meat
 	}
 
 	
-	protected void useEenergy( float energyPercentLoss ) {
+	protected void useEnergy( float energyPercentLoss ) {
 		reduceEenergy( energyPercentLoss );
 		getAnimalState().setEnergyLevel( getEnergyLevel() );	// just to keep AnimalState up-to-date
 	}
 
-	public abstract void proliferate();
+
+
+
+
+	public boolean isAbleToProliferate() {
+		if( energyLevel < getAnimalSpeciesSpecification().getMIN_ENERGY_PERCENT_FOR_PROLIFERATION() ) // The animal will try to priliferate only if it has enough energy
+			return false;
+
+		if( getAge().toHours() < getAnimalSpeciesSpecification().getMIN_BREEDING_AGE().toHours() ) 
+			return false;
+
+		if( getGender().equals( Gender.MALE ) ) {
+			if( getAge().toHours() > getAnimalSpeciesSpecification().getMAX_BREEDING_MALE_AGE().toHours() ) 
+				return false;
+		}
+		else {
+			if( getAge().toHours() > getAnimalSpeciesSpecification().getMAX_BREEDING_FEMALE_AGE().toHours() ) 
+				return false;			
+		}
+
+		return !isProliferating;	// return false if already isProliferating
+	}
+
+
+
+
+
+	/**
+	 * Try to proliferate in this WildParkCell.
+	 * 1. check if this animal conditions allow to proliferate
+	 * 1.a. check MIN_ENERGY_PERCENT_FOR_PROLIFERATION
+	 * 1.b. check MIN_BREEDING_AGE
+	 * 1.c. check MAX_BREEDING_AGE
+	 * 1.d. check if this animal isProliferating (is already pregnant)
+	 * 
+	 * Find in this WildParkCell another animal of the same species, the opposite gender
+	 * and able to proliferate.
+	 * @return true if the proliferation is successful
+	 */
+	public boolean proliferate() {
+		if( !isAbleToProliferate() )
+			return false;
+
+		for( Animal animal : getAnimalState().getWildParkAreaCell().getAnimals() ) {
+			if( !animal.getSPECIES_NAME().equals( getSPECIES_NAME() ) )
+				continue;
+
+			if( animal.getGender().equals( getGender() )  )
+				continue;
+
+			if( !animal.isAbleToProliferate() )
+				continue;
+
+			// Hurra - Proliferation 
+			if( getGender().equals( Gender.FEMALE ) ) {
+				startProliferation();	// This animal is Female
+			}
+			else {
+				animal.startProliferation(); // Another animal is Female
+			}	
+			
+			//Use much energy for copulation
+			useEnergy( getAnimalSpeciesSpecification().getENERGY_PERCENT_LOSS_ON_COPULATION() );
+			
+			return true;
+			
+		}	
+
+		return false;	
+	}
+
+
+	/**
+	 * Get inseminated - only FEMALE animals can be insaminated.
+	 * The animal gets pregnant or starts the egg bearing process
+	 */
+	public void startProliferation() {
+		isProliferating = true;
+		getAnimalState().isProliferating = true; // to keep AnimalState up-to-date
+	}
+	
+	
 	
 	public AnimalState getAnimalState() {
 		return animalState;
@@ -248,7 +349,7 @@ extends Meat
 	public void performTimeStep() {
 		// Loose energy just because of passing time
 		System.out.printf( "Animal.performTimeStep(): useEnergy on IDLE --- getENERGY_LOSS_ON_IDLE = %.4f\r\n", getENERGY_LOSS_ON_IDLE() );
-		useEenergy( getENERGY_LOSS_ON_IDLE() );
+		useEnergy( getENERGY_LOSS_ON_IDLE() );
 
 		if( energyLevel <= 0 )
 			die();
@@ -262,23 +363,27 @@ extends Meat
 			// PROLIFERATE - if in the place there is an animal of the same species with the opposite gender 
 			// and in the range of breeding age MAX and MIN values and is not pregnant already
 			proliferate();
-
-			// MAKE MOOVE
-			// Loose energy on move
-//			float energyPercentLoss = 0;
-			float energyPercentLoss = move( WildPark.getWildParkTimeStepDuration() );
-			System.out.printf( ">=70%% --- performTimeStep(): useEnergy - on move --- energyPercentLoss = %.4f\r\n", energyPercentLoss );
-
-			if( energyLevel < getAnimalSpeciesSpecification().getHUNGER_ENERGY_PERCENT() ) { //Zaczyna chudnąć dopiero, gdy osiągię poziom głodu
-				energyPercentLoss += getENERGY_LOSS_ON_IDLE(); // get the sum of on_idle_energy_loss + on_move_energy_loss
-				System.out.printf( "<70%% --- energyPercentLoss = %.4f\r\n", energyPercentLoss );
-				reduceWeight( weight * energyPercentLoss / 100 ); // chudnie procentowo tyle, co traci energii
-				getAnimalState().setWeight( weight );	// just to keep AnimalState up-to-date
-			}
-
-			if( energyLevel <= 0 )
+			if( energyLevel <= 0 ) {
 				die();
+			}
+			else {
+				// MAKE MOOVE
+				// Loose energy on move
+	//			float energyPercentLoss = 0;
+				float energyPercentLoss = move( WildPark.getWildParkTimeStepDuration() );
+				System.out.printf( ">=70%% --- performTimeStep(): useEnergy - on move --- energyPercentLoss = %.4f\r\n", energyPercentLoss );
 
+				if( energyLevel < getAnimalSpeciesSpecification().getHUNGER_ENERGY_PERCENT() ) { //Zaczyna chudnąć dopiero, gdy osiągię poziom głodu
+					energyPercentLoss += getENERGY_LOSS_ON_IDLE(); // get the sum of on_idle_energy_loss + on_move_energy_loss
+					System.out.printf( "<70%% --- energyPercentLoss = %.4f\r\n", energyPercentLoss );
+					reduceWeight( weight * energyPercentLoss / 100 ); // chudnie procentowo tyle, co traci energii
+					getAnimalState().setWeight( weight );	// just to keep AnimalState up-to-date
+				}
+
+				if( energyLevel <= 0 )
+					die();
+			}
+			
 			//Remember current animal state at animal history list
 			animalStateHistory.add( new AnimalState( getAnimalState() ) );
 		}

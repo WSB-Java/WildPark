@@ -25,7 +25,8 @@ public final class InsectEatingBatSpecification extends AnimalSpeciesSpecificati
 	private static final int MAX_SCION_COUNT_IN_LITTER = 2;	// na tej podstawie określimy widełki RANDOMa określającego liczbę potomków w danym miocie
 	private static final Duration MAX_AGE = Duration.ofDays(25*365); // 20 years - 21 years in Poland - 38 years World Record
 	private static final Duration MIN_BREEDING_AGE = Duration.ofDays(6*30); // minimalny wiek rozrodczy
-	private static final Duration MAX_BREEDING_AGE = Duration.ofDays(15*365); // maksymalny wiek rozrodczy
+	private static final Duration MAX_BREEDING_MALE_AGE = Duration.ofDays(22*365); // [days] maksymalny wiek rozrodczy samca
+	private static final Duration MAX_BREEDING_FEMALE_AGE = Duration.ofDays(15*365); // [days] maksymalny wiek rozrodczy samicy
 	private static final Duration PROLIFERATION_DURATION = Duration.ofDays(170); // [days] Duration of pregnancy or bearing and incubating eggs. Bats copulate in Autumn and give birth in late Spring.
 	private static final Duration MAX_AGE_IN_NEST = Duration.ofDays(3*30); // po ilu 
 	private static final Duration MIN_SELF_GOVERNMENT_AGE = Duration.ofDays(3*30); // minimalny wiek usamodzielnienia się
@@ -163,8 +164,12 @@ public final class InsectEatingBatSpecification extends AnimalSpeciesSpecificati
 		return MIN_BREEDING_AGE;
 	}
 	
-	public Duration getMAX_BREEDING_AGE() {
-		return MAX_BREEDING_AGE;
+	public Duration getMAX_BREEDING_MALE_AGE() {
+		return MAX_BREEDING_MALE_AGE;
+	}
+	
+	public Duration getMAX_BREEDING_FEMALE_AGE() {
+		return MAX_BREEDING_FEMALE_AGE;
 	}
 	
 	public Duration getMAX_AGE_IN_NEST() {

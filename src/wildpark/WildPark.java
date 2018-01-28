@@ -22,6 +22,7 @@ import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.stage.Stage;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -87,11 +88,12 @@ public class WildPark extends Application {
     public static CHART_SpeciesTotalWeight_LINE chart_SpeciesTotalWeight_Line = null;
     public static CHART_SpeciesTotalWeight_PIE chart_SpeciesTotalWeight_Pie = null;
 
-
+    
+    
     /**
      * Variable used for timer actions
      */
-    Timeline timeline = null;
+    public Timeline timeline = null;
 
     
     /**
@@ -134,7 +136,7 @@ public class WildPark extends Application {
     /**
      * Make a single time step of Wild Park - add a single Wild Park Time unit defined in WILD_PARK_TIME_STEP_DURATION constnt
      */
-    public static void makeWildParkTimeStep() {
+    public void makeWildParkTimeStep() {
         wildParkTime = wildParkTime.plus( WILD_PARK_TIME_STEP_DURATION );
         //System.out.println("Addition to park time: " + wildParkTime.toHours());
 
@@ -231,6 +233,9 @@ public class WildPark extends Application {
 
     
     
+    
+    Slider slider = null;
+    
     // MENU
     MenuItem menu1_New = new MenuItem("New");
     MenuItem menu1_Open = new MenuItem("Open...");
@@ -286,8 +291,8 @@ public class WildPark extends Application {
     };       
 
 
-    Button toolBarButton_Play = new Button("Play");
-    boolean timeStepsAnimationStopped = true; // This is set to false, after Play button is clicked. It is set to true again, after Stop button is clicked. It is used by Play function.
+    private Button toolBarButton_PlayStop = new Button("Play");
+    private boolean timeStepsAnimationStopped = true; // This is set to false, after Play button is clicked. It is set to true again, after Stop button is clicked. It is used by Play function.
 
     int numberOfStepsToRun = 10; // when Run button is clicked
 
@@ -326,6 +331,8 @@ public class WildPark extends Application {
 
     
     // STATUS BAR:
+    Button button_zoom100 = new Button("100% Zoom"); 
+    Button button_zoomFitToWindow = new Button( "Fit to window" );
     public static Label label_NumberOfAnimals = new Label( String.format( "Number of animals: %10d", 0 ) );
     public static Label label_NumberOfDeadBodies = new Label( String.format( "Number of dead bodies: %10d", 0 ) );   
     Button button_addAnimals = new Button("Add Animals..."); 
@@ -339,7 +346,7 @@ public class WildPark extends Application {
     // Main application stage
     public static Stage stage;
     GridPane wildParkGrid = new GridPane();
-
+    ScrollPane scrollPane = new ScrollPane();
 
 
 
@@ -357,7 +364,6 @@ public class WildPark extends Application {
 
     @Override
     public void start( Stage stage ) {
- //       Group root = new Group();
         this.stage = stage;
 
         try {
@@ -377,8 +383,19 @@ public class WildPark extends Application {
         wildParkGrid.setPadding( new Insets(10, 10, 10, 10) );
         wildParkGrid.setVgap(0);    // gap between cells
         wildParkGrid.setHgap(0);    // gap between cells
- 
-        Slider slider = new Slider( 0.15, 2, 0.34 );    // Slider( min, max, initial_value )
+        //wildParkGrid.setPickOnBounds( true ); 
+        wildParkGrid.addEventFilter( MouseEvent.MOUSE_PRESSED, mouseEvent -> {
+            	System.out.println( "pressed" );
+            	mouseEvent.consume();
+        	});
+
+        wildParkGrid.addEventFilter( MouseEvent.MOUSE_DRAGGED, mouseEvent -> {
+            	System.out.println( "----dragged" );
+            	mouseEvent.consume();
+            });
+        
+        
+        slider = new Slider( 0.15, 2, 0.34 );    // Slider( min, max, initial_value )
         slider.setOrientation( Orientation.VERTICAL );
         slider.setShowTickMarks(true);
         slider.setShowTickLabels(true);
@@ -390,9 +407,8 @@ public class WildPark extends Application {
         wildParkGrid.scaleXProperty().bind(slider.valueProperty());
         wildParkGrid.scaleYProperty().bind(slider.valueProperty());
 
-        ScrollPane scrollPane = new ScrollPane();
         scrollPane.setContent( wildParkGrid );
-//  scrollPane.setPannable(true);
+        scrollPane.setPannable(true);
 //  scrollPane.setFitToWidth(true);
         scrollPane.setHvalue(0.5);        
         scrollPane.setVvalue(0.5);        
@@ -411,7 +427,7 @@ public class WildPark extends Application {
 
         textField_StepDelay.setPrefColumnCount(2);
         textField_StepDelay.setText( String.format( "%d", stepDelay ) );
-        toolBarButton_Play.setMinWidth( 42 );   // ...to avoid size change when "Play" is switched to "Stop"
+        toolBarButton_PlayStop.setMinWidth( 42 );   // ...to avoid size change when "Play" is switched to "Stop"
 
         textField_NumberOfStepsToRun.setPrefColumnCount(3);
         textField_NumberOfStepsToRun.setText( String.format( "%d", numberOfStepsToRun ) );
@@ -429,7 +445,7 @@ public class WildPark extends Application {
             new Label( "Play Speed:"),
             textField_StepDelay,
             new Label( "sec./step"),
-            toolBarButton_Play,
+            toolBarButton_PlayStop,
             new Separator( Orientation.VERTICAL ),
             new Label( "Run"),
             textField_NumberOfStepsToRun,
@@ -444,6 +460,8 @@ public class WildPark extends Application {
         toolBarLabel_CurrentStep.setMinWidth(40);
 
         HBox statusBar = new HBox(4);  // HBox( spacing )
+        HBox.setMargin( button_zoom100, new Insets(4,2,4,0) );
+        HBox.setMargin( button_zoomFitToWindow, new Insets(4,0,4,2) );
         HBox.setMargin( label_NumberOfAnimals, new Insets(4,4,7,0) );    // Insets( top, right, bottom, left )
         HBox.setMargin( label_NumberOfDeadBodies, new Insets(4,4,7,0) );    // Insets( top, right, bottom, left )
         HBox.setMargin( button_addAnimals, new Insets(4,0,4,0) );    // Insets( top, right, bottom, left )
@@ -454,7 +472,7 @@ public class WildPark extends Application {
         HBox.setMargin( button_SearchAnimal, new Insets(4,0,4,0) );    // Insets( top, right, bottom, left )
         HBox.setMargin( button_trackAnimals, new Insets(4,0,4,0) );    // Insets( top, right, bottom, left )
         statusBar.setAlignment(Pos.BOTTOM_CENTER);
-        statusBar.getChildren().addAll( label_NumberOfAnimals, new Separator( Orientation.VERTICAL ), label_NumberOfDeadBodies, new Separator( Orientation.VERTICAL ), button_addAnimals, new Separator( Orientation.VERTICAL ), label_FindAnimal, textField_FindAnimal, button_SearchAnimal, new Separator( Orientation.VERTICAL ), button_trackAnimals );    
+        statusBar.getChildren().addAll( button_zoom100, button_zoomFitToWindow, new Separator( Orientation.VERTICAL ), label_NumberOfAnimals, new Separator( Orientation.VERTICAL ), label_NumberOfDeadBodies, new Separator( Orientation.VERTICAL ), button_addAnimals, new Separator( Orientation.VERTICAL ), label_FindAnimal, textField_FindAnimal, button_SearchAnimal, new Separator( Orientation.VERTICAL ), button_trackAnimals );    
 
         stage.setTitle("Wild Park 1.26");
 
@@ -470,22 +488,38 @@ public class WildPark extends Application {
 // () -> scrollPane.getViewportBounds().getHeight() - wildParkGrid.getHeight(),
 // wildParkGrid.heightProperty(),
 // scrollPane.viewportBoundsProperty());
+        
+        Scene scene;
 
                                     // BorderPane( center                                                   , top, right, bottom  , left )
                                                     // BorderPane( center    , top   , right, bottom, left ) 
-        stage.setScene( new Scene( new BorderPane( new BorderPane( scrollPane, toolBar, null, null, slider ), menuBar, null, statusBar, null ) ) );
+        stage.setScene( scene = new Scene( new BorderPane( new BorderPane( scrollPane, toolBar, null, null, slider ), menuBar, null, statusBar, null ) ) );
 
         
         initializeWildParkArea();
         newWildParkArea();
 
-        stage.setWidth(1000);
+        stage.setWidth(1100);
         stage.setHeight(600);
         stage.show();
 
         textField_StepDelay.setAlignment(Pos.CENTER_RIGHT); // setAlignment MUST be called after the TextField was added to the scene
         textField_NumberOfStepsToRun.setAlignment(Pos.CENTER_RIGHT); // setAlignment MUST be called after the TextField was added to the scene
 
+        scene.setOnKeyPressed( event -> {
+            if (event.isShiftDown()) {
+                System.out.println( "SHIFT Pressed" );
+            }
+            KeyCode keycode = event.getCode();
+			switch (event.getCode()) {
+			    case ENTER: stopTimeStepsAnimation();               
+			    			makeWildParkTimeStep(); 
+			    			break;
+			    case P: playStopWildPark(); break;
+			    case N: newWildPark(); break;
+			    case R: resetWildPark(); break;
+			}
+        });
     }
 
 
@@ -504,6 +538,10 @@ public class WildPark extends Application {
                 final WildParkAreaCell areaCell = new WildParkAreaCell( x, y, x + " : " + y );;
                 cellArray[x][y] = areaCell;
 
+                //areaCell.setOnMouseDragged( e -> { wildParkGrid.getOnMouseDragged(); System.out.println( "Mouse Dragged" ); } );
+                //areaCell.setPickOnBounds( false ); 
+                //areaCell.setMouseTransparent( true );
+                
                 areaCell.setMinSize( WILD_PARK_CELL_WIDTH, WILD_PARK_CELL_HEIGHT );
                 areaCell.setMaxSize( WILD_PARK_CELL_WIDTH, WILD_PARK_CELL_HEIGHT );
 
@@ -865,13 +903,16 @@ public class WildPark extends Application {
 
 
 
+    
+    
 
 
 
 
     void clearWildPark() {
         getAnimals().clear();
-
+        WildParkArea.getDeadBodies().clear();
+        
         // Reset Meat/Animal identifier base value 
         Meat.lastAnimalID = 0;
         wildParkTime = Duration.ZERO;
@@ -894,27 +935,9 @@ public class WildPark extends Application {
 
 
 
-    void saveWildPark() {
-        for( Animal animal : WildPark.getAnimals() ) {
-            //Save Animal Specification
-            //Save animal.getSpecification();
-            //Save AnimalState list - a history of whole life of the animal
-            //Save "______________________________________________________"
-        }
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
+    
+    
     public static WildParkAreaCell getWildParkAreaCell( int x, int y ) {
         return cellArray[x][y];
     }
@@ -998,8 +1021,8 @@ public class WildPark extends Application {
 
 
 
-    public void stopTimeStepsAnimation() {
-        toolBarButton_Play.setText( "Play" );
+    private void stopTimeStepsAnimation() {
+        toolBarButton_PlayStop.setText( "Play" );
         timeStepsAnimationStopped = true;    
         //Stop automatic animation of time steps                
         if( timeline != null ) {
@@ -1017,8 +1040,116 @@ public class WildPark extends Application {
 
 
 
+    
 
 
+    private void newWildPark() {
+        stopTimeStepsAnimation();
+        //Wyświetl okno dialogowe z pytaniem, czy użytkownik chce zapisać bieżący park.
+        //
+        clearWildPark();
+        newWildParkArea();                    	        
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    
+    private void openWildPark() {
+        // Opens the file explorer window to find the Wild Park Log File saved in previous sessions.
+    	//
+        stopTimeStepsAnimation();    	
+    }
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    private void saveWildPark() {
+        for( Animal animal : getAnimals() ) {
+        	//Save Animal Specification
+            animal.getAnimalSpeciesSpecification().toString();
+        	
+        	for( AnimalState animalState : animal.getAnimalStateHistory() ) {
+        		
+        	}
+            //Save AnimalState list - a history of whole life of the animal
+            //Save "______________________________________________________"
+        }
+    }
+
+    
+    
+    
+    
+    
+    
+        
+    
+    
+
+    
+    private void resetWildPark() {
+        // Resets Wild Park life - but does not change the map. Life starts from the begining.
+        stopTimeStepsAnimation();
+        clearWildPark();
+        populateWildPark();
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    /**
+     * This MUST BE package-private or public for timeline to play correctly
+     */
+    private void playStopWildPark() {
+	    // Let the Park performs steps automatically with the speed specified in textField_StepDelay text field.
+	    // Change the button Label to Stop and perform Time Steps until the Stop button is clicked.
+	    if( timeStepsAnimationStopped ) {   // if Play button clicked
+	        toolBarButton_PlayStop.setText( "Stop" );
+	        timeStepsAnimationStopped = false;
+	        //Perform automatic steps with specified delay determined on the basis of stepDelay attribute value.
+	        timeline = new Timeline( new KeyFrame(
+	            javafx.util.Duration.millis( (int) 1000*stepDelay ),
+	            ae -> makeWildParkTimeStep() ) ); // Programmatically scroll to the very bottom
+	        timeline.setCycleCount( Animation.INDEFINITE ); // Animation.INDEFINITE
+	        timeline.play();                    
+	    } else {    // if Stop button clicked
+	        stopTimeStepsAnimation();
+	    }
+	}
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     /**
      * Listeners to menu items, buttons and other controls of UI
      */
@@ -1052,11 +1183,7 @@ public class WildPark extends Application {
             @Override 
             public void handle( ActionEvent e ) {
                 System.out.println("menu1_New clicked"); 
-                stopTimeStepsAnimation();
-                //Wyświetl okno dialogowe z pytaniem, czy użytkownik chce zapisać bieżący park.
-                //
-                clearWildPark();
-                newWildParkArea();                
+                newWildPark();
             }
         });
 
@@ -1064,7 +1191,7 @@ public class WildPark extends Application {
             @Override 
             public void handle( ActionEvent e ) {
                 System.out.println("menu1_Open clicked");
-                stopTimeStepsAnimation();
+            	openWildPark();
             }
         });
 
@@ -1072,7 +1199,7 @@ public class WildPark extends Application {
             @Override 
             public void handle( ActionEvent e ) {
                 System.out.println("menu1_Save_New clicked");
-                stopTimeStepsAnimation();
+                saveWildPark();
             }
         });
 
@@ -1080,7 +1207,6 @@ public class WildPark extends Application {
             @Override 
             public void handle( ActionEvent e ) {
                 System.exit(0);
-
             }        
         });
 
@@ -1183,20 +1309,17 @@ public class WildPark extends Application {
             }        
         });
 
-        //------------------
 
 
-        //------------------
-        //------------------
-        //------------------
-        // Resets Wild Park life - The new terrain is randomly generated and life starts from the begining. 
+        //------------------------------------------------------------------------
+        //------------------------------------------------------------------------
+        //------------------------------------------------------------------------
+
         toolBarButton_New.setOnAction( new EventHandler<ActionEvent>() {
             @Override 
             public void handle( ActionEvent e ) {
-                //Wyświetl okno dialogowe z pytaniem, czy użytkownik chce zapisać bieżący park.
-                stopTimeStepsAnimation();
-                clearWildPark();
-                newWildParkArea();                
+	            // Resets Wild Park life - The new terrain is randomly generated and life starts from the begining. 
+	           	newWildPark();
             }
         });
 
@@ -1204,8 +1327,7 @@ public class WildPark extends Application {
             @Override 
             public void handle( ActionEvent e ) {
                 System.out.println("toolBarButton_Open clicked");
-                // Opens the file explorer window to find the Wild Park Log File saved in previous sessions.
-                
+                openWildPark();
             }
         });
 
@@ -1214,7 +1336,7 @@ public class WildPark extends Application {
             public void handle( ActionEvent e ) {
                 System.out.println("toolBarButton_Save clicked");
                 // Open Wild Park Save As dialog box or just save the Park if the file name is already known
-                
+                saveWildPark();
             }
         });
 
@@ -1222,33 +1344,7 @@ public class WildPark extends Application {
             @Override 
             public void handle( ActionEvent e ) {
                 System.out.println("toolBarButton_Reset clicked");
-                // Resets Wild Park life - but does not change the map. Life starts from the begining.
-                stopTimeStepsAnimation();
-                clearWildPark();
-                populateWildPark();
-            }
-        });
-
-
-        toolBarButton_Play.setOnAction( new EventHandler<ActionEvent>() {
-            @Override 
-            public void handle( ActionEvent e ) {
-                System.out.println("toolBarButton_Play/Stop clicked");
-                // Let the Park performs steps automatically with the speed specified in textField_StepDelay text field.
-                // Change the button Label to Stop and perform Time Steps until the Stop button is clicked.
-                if( timeStepsAnimationStopped ) {   // if Play button clicked
-                    toolBarButton_Play.setText( "Stop" );
-                    timeStepsAnimationStopped = false;
-                    //Perform automatic steps with specified delay determined on the basis of stepDelay attribute value.
-                    timeline = new Timeline( new KeyFrame(
-                        javafx.util.Duration.millis( (int) 1000*stepDelay ),
-                        ae -> makeWildParkTimeStep() ) ); // Programmatically scroll to the very bottom
-                    timeline.setCycleCount( Animation.INDEFINITE ); // Animation.INDEFINITE
-                    timeline.play();                    
-                } else {    // if Stop button clicked
-                    stopTimeStepsAnimation();
-                }
-
+                resetWildPark();
             }
         });
 
@@ -1257,8 +1353,15 @@ public class WildPark extends Application {
             public void handle( ActionEvent e ) {
                 System.out.println("toolBarButton_Step clicked");
                 stopTimeStepsAnimation();               
-                // Perform the single Time step
                 makeWildParkTimeStep();
+            }
+        });
+
+        toolBarButton_PlayStop.setOnAction( new EventHandler<ActionEvent>() {
+            @Override 
+            public void handle( ActionEvent e ) {
+                System.out.println("toolBarButton_Play/Stop clicked");
+                playStopWildPark();
             }
         });
 
@@ -1353,11 +1456,36 @@ public class WildPark extends Application {
             }
         });
 
+        //--------------------------------------------------------------------
+        //--- STATUS BAR -----------------------------------------------------
+        
+        button_zoom100.setOnAction( new EventHandler<ActionEvent>() {
+            @Override 
+            public void handle( ActionEvent e ) {
+                System.out.println("button_zoom100 clicked");
+                // Zoom to 100%
+                slider.setValue(1);
+            }
+        });        
+
+        button_zoomFitToWindow.setOnAction( new EventHandler<ActionEvent>() {
+            @Override 
+            public void handle( ActionEvent e ) {
+                System.out.println("button_zoomFitToWindow clicked");
+                // Zoom to fit WildPark in the visible window pane area
+                slider.setValue(0.15);
+                scrollPane.setHvalue(0.5);        
+                scrollPane.setVvalue(0.5);        
+            }
+        });        
+        
         button_addAnimals.setOnAction( new EventHandler<ActionEvent>() {
             @Override 
             public void handle( ActionEvent e ) {
                 System.out.println("button_addAnimals clicked");
-                // Add the specified number of animals of the specified species to the WildPark
+                // Table that allows to add the specified number of animals of the specified species to the WildPark
+                TABLE_AddAnimals table_AddAnimals = new TABLE_AddAnimals();
+                
             }
         });
         
